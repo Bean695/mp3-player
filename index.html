@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>◢◤ RETRO MP3 PLAYER ◥◣</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .player {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+
+        .title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        .now-playing {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 3px solid;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .song-list {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 3px solid;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .song-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .song-item:hover {
+            transform: translateX(5px);
+        }
+
+        .song-item.selected {
+            border: 2px solid;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .volume-label {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 15px;
+            border-radius: 10px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .volume-value {
+            font-weight: bold;
+            min-width: 45px;
+            text-align: right;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .controls-row2 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            border: 3px solid;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            border: 2px solid;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .styles-menu {
+            display: none;
+            position: absolute;
+            background: rgba(0, 0, 51, 0.98);
+            border: 3px solid #FF00FF;
+            border-radius: 5px;
+            padding: 10px;
+            z-index: 1000;
+            min-width: 200px;
+        }
+
+        .styles-menu.show {
+            display: block;
+        }
+
+        .style-option {
+            padding: 12px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .style-option:hover {
+            transform: translateX(5px);
+        }
+
+        .progress-container {
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 500px) {
+            .title {
+                font-size: 20px;
+            }
+            button {
+                font-size: 14px;
+                padding: 12px;
+            }
+            .now-playing {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="player">
+        <div class="title">═══ MP3 PLAYER ═══</div>
+        
+        <div class="now-playing" id="nowPlaying">♪ NO SONG LOADED ♪</div>
+
+        <div class="progress-container">
+            <input type="range" class="progress-bar" id="progressBar" min="0" max="100" value="0">
+            <div class="time-display">
+                <span id="currentTime">0:00</span>
+                <span id="totalTime">0:00</span>
+            </div>
+        </div>
+        
+        <div class="section-title">▼ SONG LIST ▼</div>
+        <div class="song-list" id="songList">
+            <div style="text-align: center; padding: 20px; opacity: 0.7;">
+                Click "ADD SONG" to upload MP3 files
+            </div>
+        </div>
+        
+        <div class="volume-control">
+            <span class="volume-label">🔊 VOLUME:</span>
+            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+            <span class="volume-value" id="volumeValue">70%</span>
+        </div>
+        
+        <div class="controls">
+            <button id="playBtn">▶ PLAY</button>
+            <button id="pauseBtn">⏸ PAUSE</button>
+            <button id="stopBtn">⏹ STOP</button>
+        </div>
+        
+        <div class="controls-row2">
+            <button id="loopBtn">🔁 LOOP: OFF</button>
+            <button id="addBtn">+ ADD SONG</button>
+            <button id="styleBtn">🎨 STYLES</button>
+        </div>
+        
+        <div class="status" id="status">═══ READY ═══</div>
+
+        <div class="styles-menu" id="stylesMenu">
+            <div class="style-option" data-style="neon">🌈 Neon 80s</div>
+            <div class="style-option" data-style="matrix">💚 Matrix</div>
+            <div class="style-option" data-style="amber">🟧 Amber Terminal</div>
+            <div class="style-option" data-style="vaporwave">💜 Vaporwave</div>
+            <div class="style-option" data-style="red">❤️ Red Alert</div>
+            <div class="style-option" data-style="mono">🤍 Monochrome</div>
+        </div>
+    </div>
+
+    <input type="file" class="file-input" id="fileInput" accept="audio/mp3,audio/mpeg" multiple>
+
+    <script>
+        const songs = [];
+        let currentAudio = null;
+        let currentIndex = -1;
+        let loopEnabled = false;
+        let isUpdatingProgress = false;
+
+        const styles = {
+            neon: {
+                bg: '#000033',
+                primary: '#FF00FF',
+                secondary: '#00FFFF',
+                accent: '#FFFF00',
+                text: '#00FF00',
+                listBg: '#000066',
+                buttonText: '#FFFF00',
+                hoverBg: '#00FFFF'
+            },
+            matrix: {
+                bg: '#000000',
+                primary: '#000000',
+                secondary: '#00FF00',
+                accent: '#00FF00',
+                text: '#00FF00',
+                listBg: '#001100',
+                buttonText: '#00FF00',
+                hoverBg: '#001100'
+            },
+            amber: {
+                bg: '#1a0d00',
+                primary: '#FF8800',
+                secondary: '#FFAA00',
+                accent: '#FFCC00',
+                text: '#FF9900',
+                listBg: '#2a1500',
+                buttonText: '#000000',
+                hoverBg: '#FFAA00'
+            },
+            vaporwave: {
+                bg: '#1a0033',
+                primary: '#FF1493',
+                secondary: '#00CED1',
+                accent: '#FFD700',
+                text: '#E0B0FF',
+                listBg: '#2a0055',
+                buttonText: '#000000',
+                hoverBg: '#00CED1'
+            },
+            red: {
+                bg: '#1a0000',
+                primary: '#FF0000',
+                secondary: '#CC0000',
+                accent: '#FFFF00',
+                text: '#FF6666',
+                listBg: '#330000',
+                buttonText: '#000000',
+                hoverBg: '#CC0000'
+            },
+            mono: {
+                bg: '#000000',
+                primary: '#FFFFFF',
+                secondary: '#CCCCCC',
+                accent: '#000000',
+                text: '#FFFFFF',
+                listBg: '#1a1a1a',
+                buttonText: '#000000',
+                hoverBg: '#CCCCCC'
+            }
+        };
+
+        function applyStyle(styleName) {
+            const colors = styles[styleName];
+            
+            document.body.style.backgroundColor = colors.bg;
+            document.querySelector('.player').style.boxShadow = `0 0 30px ${colors.secondary}`;
+            
+            document.querySelector('.title').style.color = colors.primary;
+            document.querySelector('.now-playing').style.color = colors.accent;
+            document.querySelector('.now-playing').style.borderColor = colors.secondary;
+            document.querySelector('.now-playing').style.backgroundColor = colors.listBg;
+            
+            document.querySelectorAll('.section-title, .volume-label, .volume-value, .time-display').forEach(el => {
+                el.style.color = colors.secondary;
+            });
+            
+            document.querySelector('.song-list').style.borderColor = colors.primary;
+            document.querySelector('.song-list').style.backgroundColor = colors.listBg;
+            
+            document.querySelectorAll('button').forEach(btn => {
+                btn.style.backgroundColor = colors.primary;
+                btn.style.color = colors.buttonText;
+                btn.style.borderColor = colors.secondary;
+            });
+            
+            document.querySelector('.status').style.color = colors.text;
+            document.querySelector('.status').style.borderColor = colors.secondary;
+            document.querySelector('.status').style.backgroundColor = colors.listBg;
+            
+            updateSongListColors(colors);
+            
+            document.getElementById('status').textContent = `═══ STYLE: ${styleName.toUpperCase()} ═══`;
+        }
+
+        function updateSongListColors(colors) {
+            document.querySelectorAll('.song-item').forEach(item => {
+                item.style.backgroundColor = colors.listBg;
+                item.style.color = colors.text;
+                item.style.borderColor = colors.primary;
+            });
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateProgress() {
+            if (currentAudio && !isUpdatingProgress) {
+                const progress = (currentAudio.currentTime / currentAudio.duration) * 100;
+                document.getElementById('progressBar').value = progress || 0;
+                document.getElementById('currentTime').textContent = formatTime(currentAudio.currentTime);
+                document.getElementById('totalTime').textContent = formatTime(currentAudio.duration || 0);
+            }
+        }
+
+        document.getElementById('progressBar').addEventListener('input', (e) => {
+            isUpdatingProgress = true;
+        });
+
+        document.getElementById('progressBar').addEventListener('change', (e) => {
+            if (currentAudio) {
+                const time = (e.target.value / 100) * currentAudio.duration;
+                currentAudio.currentTime = time;
+            }
+            isUpdatingProgress = false;
+        });
+
+        document.getElementById('addBtn').addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            
+            files.forEach(file => {
+                if (file.type === 'audio/mpeg' || file.type === 'audio/mp3') {
+                    songs.push({
+                        name: file.name,
+                        file: file,
+                        url: URL.createObjectURL(file)
+                    });
+                }
+            });
+            
+            renderSongList();
+            document.getElementById('status').textContent = `═══ ${songs.length} SONGS LOADED ═══`;
+        });
+
+        function renderSongList() {
+            const songList = document.getElementById('songList');
+            songList.innerHTML = '';
+            
+            songs.forEach((song, index) => {
+                const div = document.createElement('div');
+                div.className = 'song-item';
+                div.textContent = `♪ ${song.name}`;
+                div.addEventListener('click', () => selectSong(index));
+                songList.appendChild(div);
+            });
+            
+            const colors = styles[getCurrentStyle()];
+            updateSongListColors(colors);
+        }
+
+        function getCurrentStyle() {
+            const bg = document.body.style.backgroundColor;
+            for (const [key, value] of Object.entries(styles)) {
+                if (value.bg === bg || bg.includes(value.bg.substring(1))) {
+                    return key;
+                }
+            }
+            return 'neon';
+        }
+
+        function selectSong(index) {
+            currentIndex = index;
+            document.querySelectorAll('.song-item').forEach((item, i) => {
+                item.classList.toggle('selected', i === index);
+            });
+            playSong();
+        }
+
+        function playSong() {
+            if (currentIndex < 0 || currentIndex >= songs.length) {
+                document.getElementById('status').textContent = '═══ SELECT A SONG FIRST ═══';
+                return;
+            }
+            
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            
+            currentAudio = new Audio(songs[currentIndex].url);
+            currentAudio.volume = document.getElementById('volumeSlider').value / 100;
+            currentAudio.loop = loopEnabled;
+            
+            currentAudio.addEventListener('timeupdate', updateProgress);
+            
+            currentAudio.addEventListener('ended', () => {
+                if (!loopEnabled) {
+                    document.getElementById('nowPlaying').textContent = '♪ SONG FINISHED ♪';
+                    document.getElementById('status').textContent = '═══ READY ═══';
+                }
+            });
+            
+            currentAudio.play();
+            document.getElementById('nowPlaying').textContent = `♪ NOW PLAYING: ${songs[currentIndex].name} ♪`;
+            document.getElementById('status').textContent = '═══ ▶ PLAYING ═══';
+        }
+
+        document.getElementById('playBtn').addEventListener('click', playSong);
+
+        document.getElementById('pauseBtn').addEventListener('click', () => {
+            if (!currentAudio) return;
+            
+            if (currentAudio.paused) {
+                currentAudio.play();
+                document.getElementById('status').textContent = '═══ ▶ RESUMED ═══';
+            } else {
+                currentAudio.pause();
+                document.getElementById('status').textContent = '═══ ⏸ PAUSED ═══';
+            }
+        });
+
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            document.getElementById('nowPlaying').textContent = '♪ NO SONG LOADED ♪';
+            document.getElementById('status').textContent = '═══ ⏹ STOPPED ═══';
+            document.getElementById('progressBar').value = 0;
+            document.getElementById('currentTime').textContent = '0:00';
+        });
+
+        document.getElementById('loopBtn').addEventListener('click', () => {
+            loopEnabled = !loopEnabled;
+            if (currentAudio) {
+                currentAudio.loop = loopEnabled;
+            }
+            document.getElementById('loopBtn').textContent = loopEnabled ? '🔁 LOOP: ON' : '🔁 LOOP: OFF';
+            document.getElementById('status').textContent = loopEnabled ? '═══ LOOP ENABLED ═══' : '═══ LOOP DISABLED ═══';
+        });
+
+        document.getElementById('volumeSlider').addEventListener('input', (e) => {
+            const volume = e.target.value;
+            document.getElementById('volumeValue').textContent = `${volume}%`;
+            if (currentAudio) {
+                currentAudio.volume = volume / 100;
+            }
+        });
+
+        document.getElementById('styleBtn').addEventListener('click', (e) => {
+            const menu = document.getElementById('stylesMenu');
+            const rect = e.target.getBoundingClientRect();
+            menu.style.top = `${rect.bottom + 5}px`;
+            menu.style.left = `${rect.left}px`;
+            menu.classList.toggle('show');
+        });
+
+        document.querySelectorAll('.style-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const style = e.target.dataset.style;
+                applyStyle(style);
+                document.getElementById('stylesMenu').classList.remove('show');
+            });
+            
+            option.addEventListener('mouseenter', (e) => {
+                const colors = styles[getCurrentStyle()];
+                e.target.style.backgroundColor = colors.primary;
+                e.target.style.color = colors.accent;
+            });
+            
+            option.addEventListener('mouseleave', (e) => {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.color = '#00FFFF';
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('stylesMenu');
+            const styleBtn = document.getElementById('styleBtn');
+            if (!menu.contains(e.target) && e.target !== styleBtn) {
+                menu.classList.remove('show');
+            }
+        });
+
+        // Initialize with neon style
+        applyStyle('neon');
+    </script>
+</body>
+</html>
